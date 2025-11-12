@@ -1,0 +1,491 @@
+/* Reset y variables */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #667eea;
+    --secondary: #764ba2;
+    --accent: #f093fb;
+    --pink: #f5576c;
+    --cyan: #4facfe;
+    --purple: #a855f7;
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --text-light: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.85);
+}
+
+/* Fondo 3D con profundidad */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, 
+        #667eea 0%, 
+        #764ba2 15%, 
+        #f093fb 35%, 
+        #f5576c 55%,
+        #4facfe 75%,
+        #667eea 100%);
+    background-size: 400% 400%;
+    animation: megaGradient 25s ease infinite;
+    position: relative;
+    overflow: hidden;
+    perspective: 2000px;
+    transform-style: preserve-3d;
+    padding: 15px 0;
+}
+
+@keyframes megaGradient {
+    0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+    25% { background-position: 50% 100%; filter: hue-rotate(15deg); }
+    50% { background-position: 100% 50%; filter: hue-rotate(0deg); }
+    75% { background-position: 50% 0%; filter: hue-rotate(-15deg); }
+    100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+}
+
+/* Capas 3D de fondo */
+body::before,
+body::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.5;
+    animation: float3D 30s ease-in-out infinite;
+    transform-style: preserve-3d;
+}
+
+body::before {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.4));
+    top: -200px;
+    left: -200px;
+    animation: float3D1 30s ease-in-out infinite;
+}
+
+body::after {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(240, 147, 251, 0.8), rgba(245, 87, 108, 0.4));
+    bottom: -200px;
+    right: -200px;
+    animation: float3D2 35s ease-in-out infinite;
+}
+
+@keyframes float3D1 {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    25% { 
+        transform: translate3d(150px, -100px, 100px) rotate(90deg);
+    }
+    50% { 
+        transform: translate3d(80px, 150px, -50px) rotate(180deg);
+    }
+    75% { 
+        transform: translate3d(-120px, 80px, 80px) rotate(270deg);
+    }
+}
+
+@keyframes float3D2 {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    33% { 
+        transform: translate3d(-150px, 120px, 120px) rotate(120deg);
+    }
+    66% { 
+        transform: translate3d(120px, -150px, -80px) rotate(240deg);
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+    perspective: 2500px;
+    transform-style: preserve-3d;
+    margin: auto;
+}
+
+/* Card 3D ULTRA realista */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(40px) saturate(200%) brightness(110%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(110%);
+    border-radius: 30px;
+    border: 2px solid var(--glass-border);
+    padding: 30px 35px;
+    box-shadow: 
+        0 50px 100px rgba(0, 0, 0, 0.5),
+        0 20px 50px rgba(102, 126, 234, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 100px rgba(240, 147, 251, 0.3);
+    position: relative;
+    overflow: visible;
+    transform-style: preserve-3d;
+    animation: cardEntrance3D 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animacion de entrada 3D espectacular */
+@keyframes cardEntrance3D {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 150px, -500px) rotateX(40deg) rotateY(-30deg) scale(0.7);
+        filter: blur(30px);
+    }
+    50% {
+        transform: translate3d(0, -30px, 50px) rotateX(-10deg) rotateY(10deg) scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* Efecto hover 3D avanzado */
+.glass-card:hover {
+    transform: translate3d(0, -15px, 100px) rotateX(5deg);
+    box-shadow: 
+        0 70px 150px rgba(0, 0, 0, 0.6),
+        0 30px 80px rgba(102, 126, 234, 0.6),
+        0 0 150px rgba(240, 147, 251, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+/* Capas 3D dentro del card */
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(102, 126, 234, 0.3) 90deg,
+        transparent 180deg,
+        rgba(240, 147, 251, 0.3) 270deg,
+        transparent 360deg
+    );
+    border-radius: 35px;
+    animation: rotate3D 15s linear infinite;
+    z-index: -1;
+    transform: translateZ(-50px);
+    filter: blur(20px);
+}
+
+.glass-card::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: conic-gradient(
+        from 180deg,
+        transparent 0deg,
+        rgba(245, 87, 108, 0.3) 90deg,
+        transparent 180deg,
+        rgba(79, 172, 254, 0.3) 270deg,
+        transparent 360deg
+    );
+    border-radius: 35px;
+    animation: rotate3D 20s linear infinite reverse;
+    z-index: -2;
+    transform: translateZ(-100px);
+    filter: blur(30px);
+}
+
+@keyframes rotate3D {
+    from { transform: translateZ(-50px) rotate(0deg); }
+    to { transform: translateZ(-50px) rotate(360deg); }
+}
+
+/* Home page 3D espectacular */
+.welcome {
+    text-align: center;
+    margin-bottom: 45px;
+    animation: welcomeEntrance3D 2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-style: preserve-3d;
+}
+
+@keyframes welcomeEntrance3D {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, -500px) rotateY(180deg) rotateX(40deg) scale(0.5);
+        filter: blur(30px);
+    }
+    50% {
+        transform: translate3d(0, -20px, 100px) rotateY(-20deg) rotateX(-10deg) scale(1.15);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateY(0deg) rotateX(0deg) scale(1);
+        filter: blur(0);
+    }
+}
+
+.welcome h1 {
+    font-size: 3.5rem;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, 
+        #fff 0%, 
+        var(--accent) 20%, 
+        var(--cyan) 40%,
+        var(--purple) 60%,
+        var(--accent) 80%,
+        #fff 100%);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: megaTextShine 5s ease-in-out infinite, float3D 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(240, 147, 251, 0.8));
+    transform-style: preserve-3d;
+    text-shadow: 
+        0 2px 0 rgba(255, 255, 255, 0.5),
+        0 4px 0 rgba(255, 255, 255, 0.4),
+        0 6px 0 rgba(255, 255, 255, 0.3),
+        0 8px 0 rgba(255, 255, 255, 0.2),
+        0 10px 10px rgba(0, 0, 0, 0.4),
+        0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes megaTextShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes float3D {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) rotateX(0deg);
+    }
+    25% { 
+        transform: translate3d(0, -15px, 30px) rotateX(5deg);
+    }
+    75% { 
+        transform: translate3d(0, 15px, -30px) rotateX(-5deg);
+    }
+}
+
+.welcome p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.text-center {
+    text-align: center;
+    margin-bottom: 30px;
+    animation: fadeIn3D 1s ease 0.8s both;
+    transform-style: preserve-3d;
+}
+
+@keyframes fadeIn3D {
+    from { 
+        opacity: 0;
+        transform: translate3d(0, 30px, -100px) rotateX(-30deg);
+    }
+    to { 
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateX(0deg);
+    }
+}
+
+.text-center p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logout-container {
+    text-align: center;
+    margin-top: 45px;
+    animation: fadeIn3D 1s ease 1.5s both;
+}
+
+/* Boton logout 3D */
+.btn-logout {
+    padding: 16px 32px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.2),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transform: translateZ(20px);
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-logout::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    background: radial-gradient(circle, rgba(255, 87, 87, 0.3), transparent);
+    border-radius: 12px;
+    z-index: -1;
+    transform: translateZ(-15px);
+    filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.6s;
+}
+
+.btn-logout:hover::before {
+    opacity: 1;
+}
+
+.btn-logout:hover {
+    background: rgba(255, 87, 87, 0.25);
+    border-color: rgba(255, 87, 87, 0.6);
+    transform: translate3d(0, -6px, 60px) scale(1.08);
+    box-shadow: 
+        0 20px 50px rgba(255, 87, 87, 0.5),
+        0 5px 20px rgba(0, 0, 0, 0.3),
+        0 0 50px rgba(255, 87, 87, 0.4) inset,
+        0 2px 0 rgba(255, 255, 255, 0.3) inset;
+}
+
+.btn-logout:active {
+    transform: translate3d(0, -3px, 30px) scale(1.04);
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Scrollbar personalizada 3D */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) inset;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary), var(--accent), var(--pink));
+    border-radius: 10px;
+    box-shadow: 
+        0 0 10px rgba(240, 147, 251, 0.5),
+        0 2px 5px rgba(0, 0, 0, 0.3) inset;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--accent), var(--pink), var(--cyan));
+    box-shadow: 
+        0 0 20px rgba(240, 147, 251, 0.8),
+        0 2px 5px rgba(0, 0, 0, 0.3) inset;
+}
+
+/* Responsive 3D mejorado */
+@media (max-width: 768px) {
+    body {
+        padding: 10px 0;
+    }
+
+    .container {
+        max-width: 95%;
+        padding: 8px;
+        perspective: 1500px;
+    }
+
+    .glass-card {
+        padding: 25px 20px;
+        border-radius: 25px;
+    }
+
+    .welcome h1 {
+        font-size: 2.5rem;
+    }
+
+    .welcome {
+        margin-bottom: 35px;
+    }
+
+    .logout-container {
+        margin-top: 35px;
+    }
+
+    .btn-logout {
+        padding: 14px 28px;
+        font-size: 0.92rem;
+    }
+
+    .text-center p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 8px 0;
+    }
+
+    .glass-card {
+        padding: 22px 18px;
+    }
+
+    .welcome h1 {
+        font-size: 2.2rem;
+        margin-bottom: 20px;
+    }
+
+    .welcome {
+        margin-bottom: 30px;
+    }
+
+    .logout-container {
+        margin-top: 30px;
+    }
+
+    .btn-logout {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+    }
+
+    .text-center p {
+        font-size: 0.88rem;
+        margin-bottom: 8px;
+    }
+}
