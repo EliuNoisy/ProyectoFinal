@@ -1,62 +1,212 @@
+// Funciones de utilidad para mensajes
 function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
     if (errorDiv) {
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
+        errorDiv.style.background = 'rgba(255, 87, 87, 0.2)';
+        errorDiv.style.borderColor = 'rgba(255, 87, 87, 0.5)';
         setTimeout(() => {
             errorDiv.style.display = 'none';
         }, 5000);
     }
 }
 
-function getUsers() {
-    const users = localStorage.getItem('users');
-    return users ? JSON.parse(users) : [];
+function showSuccess(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.style.background = 'rgba(87, 255, 87, 0.2)';
+        errorDiv.style.borderColor = 'rgba(87, 255, 87, 0.5)';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+            errorDiv.style.background = 'rgba(255, 87, 87, 0.2)';
+            errorDiv.style.borderColor = 'rgba(255, 87, 87, 0.5)';
+        }, 3000);
+    }
 }
 
-function saveUsers(users) {
-    localStorage.setItem('users', JSON.stringify(users));
+// Funcion para decodificar JWT
+function parseJWT(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Error al decodificar token:', error);
+        return null;
+    }
 }
 
-function isAuthenticated() {
-    return localStorage.getItem('isAuthenticated') === 'true';
+// Funcion para verificar si el token esta expirado
+function isTokenExpired(token) {
+    try {
+        const decoded = parseJWT(token);
+        
+        // Si no hay campo exp, asumimos que el token no expira
+        if (!decoded || !decoded.exp) {
+            console.log('Token sin fecha de expiración, considerando válido');
+            return false;
+        }
+        
+        // exp viene en segundos, Date.now() en milisegundos
+        const currentTime = Date.now() / 1000;
+        const isExpired = decoded.exp < currentTime;
+        
+        console.log('Verificando expiración del token:');
+        console.log('- Tiempo actual:', new Date(currentTime * 1000));
+        console.log('- Token expira:', new Date(decoded.exp * 1000));
+        console.log('- ¿Está expirado?:', isExpired);
+        
+        return isExpired;
+    } catch (error) {
+        console.error('Error al verificar expiración del token:', error);
+        // Si hay error al verificar, asumimos que es válido
+        return false;
+    }
+}
+
+// Funciones de autenticacion
+function saveToken(token) {
+    localStorage.setItem('authToken', token);
+}
+
+function getToken() {
+    return localStorage.getItem('authToken');
+}
+
+function saveCurrentUser(user) {
+    localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
 function getCurrentUser() {
     const userStr = localStorage.getItem('currentUser');
-    return userStr ? JSON.parse(userStr) : null;
+    if (!userStr || userStr === 'undefined') {
+        return null;
+    }
+    try {
+        return JSON.parse(userStr);
+    } catch (error) {
+        console.error('Error al parsear usuario:', error);
+        return null;
+    }
 }
 
-(function protectHome() {
+function isAuthenticated() {
+    const token = getToken();
+    
+    if (!token) {
+        console.log('No hay token, usuario no autenticado');
+        return false;
+    }
+    
+    console.log('Token encontrado:', token);
+    
+    // Verificar si el token está expirado
+    if (isTokenExpired(token)) {
+        console.log('Token expirado, limpiando sesión...');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        return false;
+    }
+    
+    console.log('Token válido, usuario autenticado');
+    return true;
+}
+
+// Funcion de logout - UNICA DEFINICION
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    window.location.replace('index.html');
+}
+
+// API Functions
+async function registerUser(userData) {
+    try {
+        const response = await fetch('https://portfolio-api-three-black.vercel.app/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al registrar usuario');
+        }
+
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function loginUser(credentials) {
+    try {
+        const response = await fetch('https://portfolio-api-three-black.vercel.app/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(credentials)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al iniciar sesion');
+        }
+
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Proteccion de rutas - EJECUCION INMEDIATA
+(function protectRoutes() {
     const currentPage = window.location.pathname.split('/').pop();
     
+    // Proteger home.html - PRIORIDAD MAXIMA
     if (currentPage === 'home.html') {
         if (!isAuthenticated()) {
+            // Redireccion inmediata sin delay
             window.location.replace('index.html');
-            return;
+            // Detener ejecucion de cualquier script
+            throw new Error('Acceso no autorizado');
         }
         
+        // Mostrar nombre de usuario
         const user = getCurrentUser();
-        if (user) {
+        if (user && user.name) {
             const userNameElement = document.getElementById('userName');
             if (userNameElement) {
-                userNameElement.textContent = `¡Bienvenido ${user.name}!`;
+                userNameElement.textContent = `Bienvenido ${user.name}`;
             }
         }
     }
-})();
-
-document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = window.location.pathname.split('/').pop();
     
+    // Redirigir si ya esta autenticado en paginas de login/register
     if (isAuthenticated() && (currentPage === 'index.html' || currentPage === 'register.html' || currentPage === '')) {
         window.location.replace('home.html');
         return;
     }
+})();
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
     
+    // Login Form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
@@ -67,66 +217,126 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const users = getUsers();
-            const user = users.find(u => u.email === email && u.password === password);
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Iniciando sesion...';
             
-            if (user) {
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                window.location.replace('home.html');
-            } else {
-                showError('Email o contraseña incorrectos');
+            try {
+                const data = await loginUser({ email, password });
+                
+                console.log('=== RESPUESTA DE LA API ===');
+                console.log('Data completa:', data);
+                console.log('Token:', data.token);
+                
+                // Guardar token
+                saveToken(data.token);
+                
+                // Decodificar el token para obtener los datos del usuario
+                const decoded = parseJWT(data.token);
+                console.log('Token decodificado:', decoded);
+                
+                if (!decoded || !decoded.user) {
+                    throw new Error('No se pudo obtener la informacion del usuario del token');
+                }
+                
+                // Guardar usuario desde el token decodificado
+                const user = decoded.user;
+                console.log('Usuario extraido del token:', user);
+                
+                saveCurrentUser(user);
+                
+                // Verificar que se guardo
+                const savedUser = getCurrentUser();
+                console.log('Usuario guardado en localStorage:', savedUser);
+                console.log('========================');
+                
+                showSuccess('Inicio de sesion exitoso');
+                
+                setTimeout(() => {
+                    window.location.replace('home.html');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error en login:', error);
+                showError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
     }
     
+    // Register Form
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
+        registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const itsonId = document.getElementById('itsonId').value.trim();
             
-            if (!name || !email || !password) {
+            if (!name || !email || !password || !itsonId) {
                 showError('Por favor completa todos los campos');
                 return;
             }
             
+            if (name.length < 6) {
+                showError('El nombre debe tener al menos 6 caracteres');
+                return;
+            }
+            
             if (password.length < 6) {
-                showError('La contraseña debe tener al menos 6 caracteres');
+                showError('La contrasena debe tener al menos 6 caracteres');
                 return;
             }
             
-            const users = getUsers();
-            
-            if (users.some(u => u.email === email)) {
-                showError('Este email ya está registrado');
+            if (itsonId.length !== 6 || !/^\d+$/.test(itsonId)) {
+                showError('El ID ITSON debe tener exactamente 6 digitos numericos');
                 return;
             }
             
-            const newUser = {
-                id: Date.now(),
-                name: name,
-                email: email,
-                password: password
-            };
+            const submitBtn = registerForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registrando...';
             
-            users.push(newUser);
-            saveUsers(users);
-            
-            alert('¡Registro exitoso! Serás redirigido al login');
-            window.location.replace('index.html');
+            try {
+                await registerUser({
+                    name,
+                    email,
+                    password,
+                    itsonId
+                });
+                
+                showSuccess('Registro exitoso. Redirigiendo al login...');
+                
+                setTimeout(() => {
+                    window.location.replace('index.html');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error en registro:', error);
+                showError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
         });
     }
     
+    // Logout Button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('currentUser');
-            window.location.replace('index.html');
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Estas seguro que deseas cerrar sesion?')) {
+                logout();
+            }
         });
     }
 });
+
+// Exponer funciones globalmente
+window.logout = logout;
+window.isAuthenticated = isAuthenticated;
